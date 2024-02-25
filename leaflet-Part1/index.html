@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Earthquake Map</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+</head>
+<body>
+    <div id="map"></div>
+
+    <script>
+        // URL containing JSON data
+        const url = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_week.geojson";
+
+        // Create a map instance
+        const map = L.map('map').setView([31.332177, -124.733253], 4);
+
+        // Add tile layer for the US map
+        L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
+            attribution: 'Tiles © Esri'
+        }).addTo(map);
+
+        // Define a legend dictionary
+        const legendDict = {
+            'Depth < 10': 'yellow',
+            'Depth < 30': 'blue',
+            'Depth < 50': 'orange',
+            'Depth < 70': 'green',
+            'Depth < 90': 'red',
+            'Depth < 0 > 90': 'purple',
+        };
+
+        // Fetch JSON data from the URL
+        d3.json(url).then(data => {
+            // Iterate through the earthquake data
+            data.features.forEach(earthquake => {
+                // Extract earthquake information
+                const latitude = earthquake.geometry.coordinates[1];
+                const longitude = earthquake.geometry.coordinates[0];
+                const magnitude = earthquake.properties.mag;
+                const depth = earthquake.geometry.coordinates[2];
+
+                const radius = magnitude * 2;
+
+                // Determine marker color based on depth
+                let color;
+                if (depth < 10) {
+                    color = 'yellow';
+                } else if (depth < 30) {
+                    color = 'blue';
+                } else if (depth < 50) {
+                    color = 'orange';
+                } else if (depth < 70) {
+                    color = 'green';
+                } else if (depth < 90) {
+                    color = 'red';
+                } else {
+                    color = 'purple';
+                }
+
+                // Create a circle marker for the earthquake
+                const marker = L.circleMarker([latitude, longitude], {
+                    radius: radius,
+                    color: color,
+                    fillColor: color,
+                    fillOpacity: 1
+                }).addTo(map);
+
+                // Create a popup with additional earthquake information
+                marker.bindPopup(`<b>Magnitude:</b> ${magnitude}<br><b>Depth:</b> ${depth} km`);
+            });
+
+            // Create legend control
+            const legend = L.control({ position: 'topright' });
+            legend.onAdd = function (map) {
+                const div = L.DomUtil.create('div', 'info legend');
+                for (const key in legendDict) {
+                    div.innerHTML +=
+                        `<i style="background:${legendDict[key]}"></i> ${key}<br>`;
+                }
+                return div;
+            };
+            legend.addTo(map);
+        }).catch(error => {
+            console.error('Error fetching data:', error);
+        });
+    </script>
+</body>
+</html>

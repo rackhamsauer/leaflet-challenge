@@ -1,1 +1,3 @@
 # leaflet-challenge
+
+I chose to only do the part 1 of the assignment, I did a lot of additional graphs with project 3. I used previous classes, tutoring, students, chat got and stack overflow to assist in creating this code. I have the size of the circles represent the magnitude and the color of the circles represent the depth. I have a pop up that includes location and magnitude and depth. The css file includes little code for the legend to populate a colored box.
